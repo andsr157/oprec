@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref, onMounted, watch } from "vue"
 import { useWindowSize } from "@vueuse/core"
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader"
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { useGeneralStore } from "@/stores/general"
 import {
@@ -14,6 +16,7 @@ import {
   AmbientLight,
   DirectionalLight,
 } from "three"
+
 const store = useGeneralStore()
 const loadingDots = ref("")
 
@@ -39,14 +42,22 @@ camera.position.set(0, 0, 10)
 scene.add(camera)
 
 const gltfLoader = new GLTFLoader()
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath(
+  "https://www.gstatic.com/draco/versioned/decoders/1.5.6/"
+)
+gltfLoader.setDRACOLoader(dracoLoader)
+
 let object: any
+let renderer: WebGLRenderer
+let controls: OrbitControls
 
 onMounted(() => {
   animateDots()
   gltfLoader.load(
-    `/oprec/himsi.gltf`,
+    "/oprec/himsi.gltf",
     (gltf: any) => {
-      gltf.scene.scale.set(0.3, 0.3, 0.3)
+      gltf.scene.scale.set(0.35, 0.35, 0.35)
       gltf.scene.position.set(0, 0, 0)
       scene.add(gltf.scene)
       object = gltf.scene
@@ -60,17 +71,19 @@ onMounted(() => {
     undefined,
     (error) => {
       console.error("Error loading himsi.gltf", error)
-      store.isLoading = false // Set isLoading to false in case of an error
+      store.isLoading = false
     }
   )
 })
 
-let renderer: WebGLRenderer
-let controls: OrbitControls
-
 function updateCamera() {
-  camera.aspect = aspectRatio.value
-  camera.updateProjectionMatrix()
+  if (camera && experience.value) {
+    const canvasWidth = experience.value.clientWidth
+    const canvasHeight = experience.value.clientHeight
+
+    camera.aspect = canvasWidth / canvasHeight
+    camera.updateProjectionMatrix()
+  }
 }
 
 function updateRenderer() {
@@ -89,7 +102,7 @@ function setRenderer() {
 }
 
 function addLights() {
-  const ambientLight = new AmbientLight(0x404040)
+  const ambientLight = new AmbientLight(0x6e6d6d)
   scene.add(ambientLight)
 
   const directionalLight = new DirectionalLight(0xffffff, 0.8)
@@ -138,10 +151,15 @@ function handleMouseLeave() {
     object.userData.hovered = true
   }
 }
+
+watch([width, height], () => {
+  updateCamera()
+  updateRenderer()
+})
 </script>
 
 <template>
-  <div class="w-full h-full">
+  <div class="w-full h-[70vh] md:h-[85vh]">
     <div
       class="flex absolute w-full h-full justify-center items-center"
       v-if="store.isLoading"
@@ -156,7 +174,7 @@ function handleMouseLeave() {
         </div>
       </div>
     </div>
-    <canvas ref="experience" class="w-full h-full" />
+    <canvas ref="experience" class="w-full !h-[75vh] md:!h-[85vh]" />
   </div>
 </template>
 
