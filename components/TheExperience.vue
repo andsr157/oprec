@@ -15,6 +15,15 @@ import {
   DirectionalLight,
 } from "three"
 const store = useGeneralStore()
+const loadingDots = ref("")
+
+function animateDots() {
+  setInterval(() => {
+    loadingDots.value =
+      loadingDots.value === "..." ? "" : loadingDots.value + "."
+  }, 500)
+}
+
 const experience = ref<HTMLCanvasElement | null>(null)
 const { width, height } = useWindowSize()
 const aspectRatio = computed(() => width.value / height.value)
@@ -33,6 +42,7 @@ const gltfLoader = new GLTFLoader()
 let object: any
 
 onMounted(() => {
+  animateDots()
   gltfLoader.load(
     `/oprec/himsi.gltf`,
     (gltf: any) => {
@@ -136,8 +146,18 @@ function handleMouseLeave() {
       class="flex absolute w-full h-full justify-center items-center"
       v-if="store.isLoading"
     >
-      <h2 class="text-white text-lg">Ready to Join With Us</h2>
+      <div
+        class="grid grid-cols-4 justify-items-center text-white text-lg"
+        style="align-items: center"
+      >
+        <div class="col-span-3 ml-10">Ready to Join With Us</div>
+        <div class="loading-dots text-left w-10 -ml-6 text-lg">
+          {{ loadingDots }}
+        </div>
+      </div>
     </div>
     <canvas ref="experience" class="w-full h-full" />
   </div>
 </template>
+
+<style scoped></style>
