@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
-    baseURL: "/oprecHimsi/",
+    baseURL: "/oprec/",
   },
   pages: true,
   css: ["~/assets/css/main.css"],

@@ -33,7 +33,7 @@ const gltfLoader = new GLTFLoader()
 let object: any
 
 onMounted(() => {
-  gltfLoader.load(`/oprecHimsi/himsi.gltf`, (gltf) => {
+  gltfLoader.load(`/oprec/himsi.gltf`, (gltf) => {
     gltf.scene.scale.set(0.3, 0.3, 0.3)
     gltf.scene.position.set(0, 0, 0)
     scene.add(gltf.scene)
