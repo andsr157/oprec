@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue"
 import { useWindowSize } from "@vueuse/core"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { useGeneralStore } from "@/stores/general"
 import {
   Scene,
   PerspectiveCamera,
@@ -14,7 +14,7 @@ import {
   AmbientLight,
   DirectionalLight,
 } from "three"
-
+const store = useGeneralStore()
 const experience = ref<HTMLCanvasElement | null>(null)
 const { width, height } = useWindowSize()
 const aspectRatio = computed(() => width.value / height.value)
@@ -33,16 +33,26 @@ const gltfLoader = new GLTFLoader()
 let object: any
 
 onMounted(() => {
-  gltfLoader.load(`/oprec/himsi.gltf`, (gltf) => {
-    gltf.scene.scale.set(0.3, 0.3, 0.3)
-    gltf.scene.position.set(0, 0, 0)
-    scene.add(gltf.scene)
-    object = gltf.scene
-    setRenderer()
-    addLights()
-    addControls()
-    loop()
-  })
+  gltfLoader.load(
+    `/oprec/himsi.gltf`,
+    (gltf: any) => {
+      gltf.scene.scale.set(0.3, 0.3, 0.3)
+      gltf.scene.position.set(0, 0, 0)
+      scene.add(gltf.scene)
+      object = gltf.scene
+      setRenderer()
+      addLights()
+      addControls()
+      store.isLoading = false
+      loop()
+    },
+    undefined,
+    undefined,
+    (error) => {
+      console.error("Error loading himsi.gltf", error)
+      store.isLoading = false // Set isLoading to false in case of an error
+    }
+  )
 })
 
 let renderer: WebGLRenderer
@@ -122,6 +132,12 @@ function handleMouseLeave() {
 
 <template>
   <div class="w-full h-full">
+    <div
+      class="flex absolute w-full h-full justify-center items-center"
+      v-if="store.isLoading"
+    >
+      <h2 class="text-white text-lg">Ready to Join With Us</h2>
+    </div>
     <canvas ref="experience" class="w-full h-full" />
   </div>
 </template>
